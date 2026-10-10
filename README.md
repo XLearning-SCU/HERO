@@ -25,7 +25,7 @@ Following our [paper](https://arxiv.org/abs/2609.38885), it couples:
   trajectories and penalize potentially unproductive turns using turn-level entropy.
 
 This repository provides HERO training and evaluation on SWE-bench Verified
-and SWE-bench Multilingual, with released HERO-4B, HERO-9B, and HERO-35B-A3B models.
+and SWE-bench Multilingual, with released HERO-4B, HERO-9B, and HERO-35B-A3B model.
 
 ## ⚡ Quick Start
 
