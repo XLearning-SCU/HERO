@@ -1,0 +1,32 @@
+diff --git a/swebench/harness/docker_build.py b/swebench/harness/docker_build.py
+index 1457423..8b18727 100644
+--- a/swebench/harness/docker_build.py
++++ b/swebench/harness/docker_build.py
+@@ -3,6 +3,7 @@ from __future__ import annotations
+ import docker
+ import docker.errors
+ import logging
++import os
+ import sys
+ import traceback
+ 
+@@ -512,6 +513,11 @@ def build_container(
+         # Define arguments for running the container
+         run_args = test_spec.docker_specs.get("run_args", {})
+         cap_add = run_args.get("cap_add", [])
++        create_kwargs = {}
++        docker_network = os.environ.get("SWE_BENCH_DOCKER_NETWORK")
++        if docker_network:
++            create_kwargs["network_mode"] = docker_network
++            logger.info(f"Using Docker network mode: {docker_network}")
+ 
+         container = client.containers.create(
+             image=test_spec.instance_image_key,
+@@ -521,6 +527,7 @@ def build_container(
+             command="tail -f /dev/null",
+             platform=test_spec.platform,
+             cap_add=cap_add,
++            **create_kwargs,
+         )
+         logger.info(f"Container for {test_spec.instance_id} created: {container.id}")
+         return container

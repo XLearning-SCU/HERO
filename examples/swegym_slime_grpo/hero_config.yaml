@@ -1,0 +1,96 @@
+# HERO bridge configuration for Slime's --custom-config-path.
+# These become attributes on the `args` namespace passed to the rollout function.
+
+hero_rollout_url: "http://127.0.0.1:8080"
+hero_gateway_url: "http://127.0.0.1:8100"
+hero_reward_key: "score"
+hero_max_async_level: 2
+hero_request_timeout: 2400
+hero_callback_host: "127.0.0.1"
+hero_min_complete_accept_fraction: 0.6
+# Filled by run.sh via envsubst with externally prepared runtime paths.
+# The container mounts and image lookups below
+# reference these through {args.hero_agent_cli_dir} / {args.hero_apptainer_image_dir}.
+hero_agent_cli_dir: ${AGENT_CLI_DIR}
+hero_apptainer_image_dir: ${APPTAINER_IMAGE_DIR}
+
+# Task template rendered per sample group.  Placeholders are filled
+# from the context: {instruction}, {num_samples}, {sample.*}, {args.*}.
+hero_task_template:
+  timeout_seconds: 2400
+  runtime:
+    backend: "apptainer"
+    # Use project-local SIF files prepared from the official SWE-Gym registry
+    # images.
+    image: "{args.hero_apptainer_image_dir}/{sample.metadata.instance_id}.sif"
+    network: "host"
+    workdir: "/hero/session/workspace"
+    env:
+      HOME: "/hero/session/home"
+      PATH: "/hero/session/home/.venv/bin:/opt/node/bin:/opt/miniconda3/envs/testbed/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    kwargs:
+      volumes:
+        - "{args.hero_agent_cli_dir}:/opt/node:ro"
+    # Node 22 + agent CLIs are mounted from hero_agent_cli_dir — no npm install
+    # at session start.
+    prepare:
+      - type: exec
+        command: >-
+          rm -rf /hero/session/workspace &&
+          mkdir -p /hero/session/logs/agent /hero/session/workspace "$HOME/.venv/bin" &&
+          cp -a /testbed/. /hero/session/workspace/ &&
+          ln -sf /opt/miniconda3/envs/testbed/bin/python "$HOME/.venv/bin/python" &&
+          ln -sf /opt/miniconda3/envs/testbed/bin/python "$HOME/.venv/bin/python3" &&
+          git config --global core.pager '' &&
+          cd /hero/session/workspace &&
+          (git reset --hard || true)
+    # Fresh reward-test runtime applies the patch and runs swebench tests.
+    eval_prepare:
+      - type: exec
+        command: >-
+          mkdir -p /hero/session/logs/agent "$HOME/.venv/bin" &&
+          ln -sf /opt/miniconda3/envs/testbed/bin/python "$HOME/.venv/bin/python" &&
+          ln -sf /opt/miniconda3/envs/testbed/bin/python "$HOME/.venv/bin/python3" &&
+          git config --global core.pager ''
+  agent:
+    harness: "codex"
+    model_name: "gpt-5.4"
+  builder:
+    strategy: "prefix_merging"
+  evaluator:
+    strategy: "swebench_harness"
+    refresh_runtime: true
+    config:
+      repo_dir: "/testbed"
+      patch_command: "cd /hero/session/workspace && git add -A && git diff --cached --binary"
+      instance: "{sample.metadata.instance}"
+      # Strip per-harness config/session dirs and common stray artifacts that
+      # would otherwise get swept into `git add -A` and bloat the patch.
+      exclude_patterns:
+        - "trajectories/**"
+        - "**/trajectories/**"
+        - "node_modules/**"
+        - "**/node_modules/**"
+        - ".cache/**"
+        - "**/.cache/**"
+        - ".venv/**"
+        - "**/.venv/**"
+        - ".claude/**"
+        - "**/.claude/**"
+        - ".codex/**"
+        - "**/.codex/**"
+        - ".gemini/**"
+        - "**/.gemini/**"
+        - ".opencode/**"
+        - "**/.opencode/**"
+        - ".config/opencode/**"
+        - ".pi/**"
+        - "**/.pi/**"
+        - ".qwen/**"
+        - "**/.qwen/**"
+        # Guard against the historical claude_code $HOME-literal env bug
+        # (now fixed, but old workspaces may still carry these dirs).
+        - "$HOME/**"
+        - "**/$HOME/**"
+
+hero_task_id_template: "hero-swegym-grpo-{rollout_id}-{sample.group_index}"

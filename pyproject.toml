@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hero"
+version = "0.1.0"
+description = "HERO: hierarchical reinforcement learning for token-efficient coding agents."
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.9.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+swebench = [
+    "swebench==4.1.0",
+    "datasets",
+]
+
+[project.scripts]
+hero = "hero.cli:main"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "build>=1.2.0",
+    "twine>=5.0.0",
+]
+
+[tool.uv]
+torch-backend = "auto"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["hero*", "slime_bridge*"]
+
+[tool.setuptools.package-data]
+hero = [
+    "**/README.md",
+]
+slime_bridge = ["README.md"]
+
+
+[tool.ruff]
+line-length = 99
+target-version = "py311"
+exclude = [
+    ".git",
+    ".venv",
+    "build",
+    "dist",
+    "slime",
+    "Megatron-LM",
+    "logs",
+    "train-logs",
+    "tmp",
+    "rollout_results",
+]

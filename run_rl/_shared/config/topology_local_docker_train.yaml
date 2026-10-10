@@ -1,0 +1,25 @@
+rollout:
+  host: 127.0.0.1
+  port: 8080
+  public_url: http://127.0.0.1:8080
+  save_dir: ./rollout_results
+
+gateway:
+  heartbeat_interval_seconds: 30
+${HERO_MAX_COMPLETIONS_SETTING}
+  # Keep the authoritative records in memory for final trajectory building,
+  # but avoid redundant per-turn completion files during long local runs.
+  completion_persistence:
+    enabled: false
+  nodes:
+    - id: localhost-node-01
+      host: 127.0.0.1
+      port: 8100
+      public_url: http://127.0.0.1:8100
+      max_init_workers: 16
+      max_run_workers: 16
+      max_postrun_workers: 16
+      model_served: ${HERO_MODEL_NAME}
+      inference:
+        engine: sglang
+        base_url: ${SGLANG_ROUTER_BASE_URL}

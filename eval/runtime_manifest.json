@@ -1,0 +1,30 @@
+{
+  "hero.gateway.server": {
+    "file": "runtime_overrides/hero/gateway/server.py",
+    "sha256": "40d8663fc52f16f13ee2b12e2e5b16b34dad154fc36b84891bffcb4e56a50c4d"
+  },
+  "hero.gateway.proxy": {
+    "file": "runtime_overrides/hero/gateway/proxy.py",
+    "sha256": "580384b09ae38a07f1608baccba6d9d6ee7b94a70f7734221b35dd9212238079"
+  },
+  "hero.gateway.node": {
+    "file": "runtime_overrides/hero/gateway/node.py",
+    "sha256": "0a8d16b63f3b0c75c0baf843849fc9973bef5ebc293933a4dff110dd26925bee"
+  },
+  "hero.gateway.transform.anthropic": {
+    "file": "runtime_overrides/hero/gateway/transform/anthropic.py",
+    "sha256": "9a0e4aa229da9b3f603e4e680f74faefcb71824512f7758fd32c073ef1702c69"
+  },
+  "hero.agent.presets.claude_code": {
+    "file": "runtime_overrides/hero/agent/presets/claude_code.py",
+    "sha256": "ad5b7d787166ad9ce8e7fcbd09dab6d050ef2b6a3965d84df863afa807514849"
+  },
+  "hero.trajectory.evaluator._patch_utils": {
+    "file": "runtime_overrides/hero/trajectory/evaluator/_patch_utils.py",
+    "sha256": "7c064383fc6f8830820cf22a0b92bb80c62038ddc3c49deac7edc2ff1a38f38b"
+  },
+  "hero.agent.presets.git_progress_hook": {
+    "file": "runtime_overrides/hero/agent/presets/git_progress_hook.py",
+    "sha256": "5dddd91380c3da78acf6d4d0f8b203740105884214613b9cf096cb6ed90e69d7"
+  }
+}

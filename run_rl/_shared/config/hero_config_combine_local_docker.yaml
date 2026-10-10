@@ -1,0 +1,114 @@
+# Shared training configuration. Repository paths and grading backends are
+# selected from each sample, so pure SWE-Gym and mixed files use the same path.
+
+hero_rollout_url: "http://127.0.0.1:8080"
+hero_gateway_url: "http://127.0.0.1:8100"
+hero_reward_key: "score"
+# Experimental efficiency reward. In turn-credit mode, B is the same-prompt
+# successful turn-count median: no-patch shaping grows after 0.5B and the
+# outcome-gated extreme tail starts after 2B. The configured max turns is the
+# automatic fallback for an all-fail prompt group.
+hero_failure_token_efficiency_reward:
+  # Experimental shaping is opt-in. Keep ordinary training and evaluation
+  # behavior unchanged unless a dedicated method launcher enables it.
+  enabled: ${HERO_FAILURE_TOKEN_EFFICIENCY_ENABLED}
+  credit_assignment: "${HERO_FAILURE_TOKEN_EFFICIENCY_CREDIT}"
+  no_patch_budget_ratio: ${HERO_FAILURE_NO_PATCH_RATIO}
+  extreme_failure_budget_ratio: ${HERO_FAILURE_EXTREME_RATIO}
+  max_abs_penalty: ${HERO_FAILURE_MAX_ABS_PENALTY}
+  fallback_success_turns: ${CLAUDE_CODE_MAX_TURNS}
+  fallback_success_input_tokens: 0
+  minimum_input_tokens: 0
+hero_max_async_level: 2
+hero_request_timeout: ${HERO_REQUEST_TIMEOUT}
+hero_callback_host: "127.0.0.1"
+hero_min_complete_accept_fraction: ${HERO_MIN_COMPLETE_ACCEPT_FRACTION}
+hero_agent_cli_dir: ${AGENT_CLI_DIR}
+
+hero_task_template:
+  timeout_seconds: ${HERO_REQUEST_TIMEOUT}
+  runtime:
+    backend: "docker"
+    import_path: "run_rl._shared.runtime.local_docker_runtime:ManagedDockerRuntime"
+    image: "{sample.metadata.sandbox_image}"
+    network: "host"
+    workdir: "{sample.metadata.repo_dir}"
+    env:
+      HOME: "/hero/session/home"
+      PATH: "/hero/session/home/.venv/bin:/opt/node/bin:/opt/miniconda3/envs/testbed/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    kwargs:
+      image_tar: "{sample.metadata.image_tar}"
+      volumes:
+        - "{args.hero_agent_cli_dir}:/opt/node:ro"
+    prepare:
+      - type: exec
+        command: >-
+          mkdir -p /hero/session/logs/agent "$HOME/.venv/bin" &&
+          test -x /opt/node/bin/node &&
+          test -x /opt/node/bin/claude &&
+          ln -sf /opt/miniconda3/envs/testbed/bin/python "$HOME/.venv/bin/python" &&
+          ln -sf /opt/miniconda3/envs/testbed/bin/python "$HOME/.venv/bin/python3" &&
+          git config --global --add safe.directory {sample.metadata.repo_dir} &&
+          git config --global core.pager '' &&
+          cd {sample.metadata.repo_dir} &&
+          (git reset --hard || true)
+    eval_prepare:
+      - type: exec
+        command: >-
+          mkdir -p /hero/session/logs/agent "$HOME/.venv/bin" &&
+          ln -sf /opt/miniconda3/envs/testbed/bin/python "$HOME/.venv/bin/python" &&
+          ln -sf /opt/miniconda3/envs/testbed/bin/python "$HOME/.venv/bin/python3" &&
+          git config --global --add safe.directory {sample.metadata.repo_dir} &&
+          git config --global core.pager ''
+  agent:
+    harness: "claude_code"
+    model_name: "${HERO_MODEL_NAME}"
+${CLAUDE_CODE_MAX_OUTPUT_TOKENS_ENV}
+    # `tools` is forwarded as Claude Code's strict --tools built-in allowlist.
+    # Leave disallowed_tools empty when using this allowlist; it is only for
+    # exceptional deny rules on an otherwise broader tool set.
+    settings:
+      # Rendered by run_prorl_swegym293_qwen3.5_4b.sh.  It is empty by
+      # default; set CLAUDE_CODE_AUTO_COMPACT=1 to enable Claude Code's
+      # persistent auto-compact settings for this run.
+      ${CLAUDE_CODE_AUTO_COMPACT_SETTINGS}
+      # The wrapper owns these experiment controls and renders them here.
+      executable: "/opt/node/bin/claude"
+      max_turns: ${CLAUDE_CODE_MAX_TURNS}
+      tools: "${CLAUDE_CODE_TOOLS}"
+      disallowed_tools: "${CLAUDE_CODE_DISALLOWED_TOOLS}"
+      # Out-of-band, fail-open observability only: never injected into model
+      # context or reward. Git subprocesses have strict time/size limits.
+      git_progress:
+        enabled: ${HERO_GIT_PROGRESS_ENABLED}
+        checkpoint_interval: ${HERO_GIT_PROGRESS_CHECKPOINT_INTERVAL}
+  builder:
+    strategy: "prefix_merging"
+  evaluator:
+    strategy: "swebench_harness"
+    refresh_runtime: true
+    config:
+      # Combined datasets: swebench_fork, multi_swe and
+      # swe_rebench are routed independently from explicit row metadata.
+      backend: "auto"
+      source_dataset: "{sample.metadata.source_dataset}"
+      repo_dir: "{sample.metadata.repo_dir}"
+      patch_command: "cd {sample.metadata.repo_dir} && git add -A && git diff --cached --binary"
+      instance: "{sample.metadata.instance}"
+      exclude_patterns:
+        - "trajectories/**"
+        - "**/trajectories/**"
+        - "node_modules/**"
+        - "**/node_modules/**"
+        - ".cache/**"
+        - "**/.cache/**"
+        - ".venv/**"
+        - "**/.venv/**"
+        - ".claude/**"
+        - "**/.claude/**"
+        - ".codex/**"
+        - "**/.codex/**"
+        - "$HOME/**"
+        - "**/$HOME/**"
+
+hero_task_id_template: "hero-combined-local-{rollout_id}-{sample.group_index}"

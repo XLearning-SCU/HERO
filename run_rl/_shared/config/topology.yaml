@@ -1,0 +1,31 @@
+rollout:
+  host: 127.0.0.1
+  port: 8080
+  public_url: http://127.0.0.1:8080
+  # The launcher changes cwd to RUN_ROOT, so this is isolated per run.
+  save_dir: ./rollout_results
+
+gateway:
+  heartbeat_interval_seconds: 30
+  max_completions: ${HERO_MAX_COMPLETIONS}
+  # Eval keeps completions in memory while the session is active, then writes
+  # one final ses_*.json containing the full trace, per-turn token usage,
+  # evaluation metadata, and Git progress.  Avoid redundant per-turn files in
+  # sessions/*/completions/.
+  completion_persistence:
+    enabled: false
+  nodes:
+    - id: localhost-node-01
+      host: 127.0.0.1
+      port: 8100
+      public_url: http://127.0.0.1:8100
+      max_init_workers: 16
+      max_run_workers: 16
+      max_postrun_workers: 16
+      model_served: Qwen/Qwen3.5-4B
+      inference:
+        engine: sglang
+        base_url: ${SGLANG_ROUTER_BASE_URL}
+        max_output_tokens: ${MAX_RESPONSE_TOKENS}
+        temperature: ${TEMPERATURE}
+        top_p: ${TOP_P}

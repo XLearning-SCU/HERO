@@ -1,0 +1,12 @@
+# Shared versions required by the tested CUDA 13 / SGLang 0.5.13 stack.
+torch==2.11.0+cu130
+torchvision==0.26.0+cu130
+torchaudio==2.11.0+cu130
+sglang==0.5.13
+transformers==5.8.1
+openai==2.6.1
+# Slime's unbounded agents dependency otherwise selects OpenAI 3.x.
+openai-agents==0.4.2
+# nvidia-resiliency-ext and the serving stack must share protobuf 6.
+protobuf==6.33.6
+grpcio-tools==1.81.1
