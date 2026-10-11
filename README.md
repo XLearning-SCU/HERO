@@ -157,14 +157,11 @@ from SWE-Gym, Multi-SWE, SWE-ReBench, and SWE-bench.
 If you find HERO useful, please cite our [paper](https://arxiv.org/abs/2609.38885):
 
 ```bibtex
-@misc{li2026hero,
-  title         = {Doing More with Less Tokens: Hierarchical Reinforcement Learning for Efficient Coding Agents},
-  author        = {Haobin Li and Liang Jiang and Zhenyu Huang and Mouxing Yang and Xi Peng},
-  year          = {2026},
-  eprint        = {2609.38885},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.SE},
-  url           = {https://arxiv.org/abs/2609.38885}
+@article{li2026hero,
+  title={Doing More with Less Tokens: Hierarchical Reinforcement Learning for Efficient Coding Agents},
+  author={Haobin Li and Liang Jiang and Zhenyu Huang and Mouxing Yang and Xi Peng},
+  journal={arXiv preprint arXiv:2609.38885},
+  year={2026}
 }
 ```
 
