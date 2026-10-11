@@ -92,9 +92,9 @@ Default GPU allocations by model size:
 
 | Model | Default GPUs |
 | --- | --- |
-| Qwen3.5-4B | 1 node × 8 |
-| Qwen3.5-9B | 1 node × 8 |
-| Qwen3.5-35B-A3B | 8 nodes × 8 |
+| Qwen3.5-4B | 1 node × 8 NVIDIA H200 |
+| Qwen3.5-9B | 1 node × 8 NVIDIA H200 |
+| Qwen3.5-35B-A3B | 8 nodes × 8 NVIDIA H200 |
 
 The launch scripts contain the default hyperparameters. For online logging,
 run `wandb login` and use `WANDB_MODE=online WANDB_PROJECT=hero`.
